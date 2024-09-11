@@ -1,9 +1,13 @@
+using System;
+using System.Xml.Linq;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(BoxCollider2D))]
 public class NinjaMovement : MonoBehaviour
 {
+    public static int xd = 100;
+
     [Header("Movement Attributes")]
     public float minXSpeed = 3f;            // Movement speed
     public float acceleration = 5f;         // Movement speed
@@ -11,7 +15,7 @@ public class NinjaMovement : MonoBehaviour
     public float maxYSpeed = 20f;           // Maximum vertical speed
 
     [Header("Jump Attributes")]
-    public float jumpSpeed = 8f;        // Additional force applied while holding jump
+    public float jumpSpeed = 8f;            // Additional force applied while holding jump
     public float maxJumpTime = 0.17f;       // Maximum time the jump can be held
     public float gravityScale = 4f;         // Custom gravity scale to adjust falling speed
     public LayerMask groundLayer;           // Layer representing the ground
@@ -55,20 +59,36 @@ public class NinjaMovement : MonoBehaviour
 
     void Movement()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
+        bool right = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
+        bool left = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
 
-        if (horizontalInput != 0)
+        if (left && right)
         {
-            Debug.Log("pressing:" + horizontalInput);
-            Debug.Log("velocity:" + rb.velocity.x);
-
-            if (rb.velocity.x == 0)
+            return;
+        }
+        if (right)
+        {
+            if (rb.velocity.x <= 0.1 && rb.velocity.x >= -0.1)
             {
-                rb.velocity = new Vector2(horizontalInput * minXSpeed, rb.velocity.y);
+                rb.velocity = new Vector2(minXSpeed, rb.velocity.y);
             }
+
             else
             {
+                Debug.Log("Are you doing something?");
                 rb.AddForce(new Vector2(acceleration * Time.deltaTime, 0));
+            }
+        }
+        if (left)
+        {
+            if (rb.velocity.x <= 0.1 && rb.velocity.x >= -0.1)
+            {
+                rb.velocity = new Vector2(-minXSpeed, rb.velocity.y);
+            }
+
+            else
+            {
+                rb.AddForce(new Vector2(-acceleration * Time.deltaTime, 0));
             }
         }
     }

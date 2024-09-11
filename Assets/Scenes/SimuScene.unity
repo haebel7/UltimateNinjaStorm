@@ -316,8 +316,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f9e8574cb4ad6445a0906b966173458, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialJumpForce: 6
-  holdJumpForce: 8
+  minXSpeed: 3
+  acceleration: 1000
+  maxXSpeed: 20
+  maxYSpeed: 20
+  jumpSpeed: 8
   maxJumpTime: 0.17
   gravityScale: 4
   groundLayer:
