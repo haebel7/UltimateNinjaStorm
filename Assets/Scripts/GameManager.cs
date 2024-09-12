@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverOverlay;
 
     private bool isGameOver = false;
+    private bool gameStarted = false;
 
     // Start is called before the first frame update
     void Start()
@@ -22,11 +23,17 @@ public class GameManager : MonoBehaviour
         {
             RestartGame();
         }
+
+        if ((isGameOver || !gameStarted) && Input.GetKeyDown(KeyCode.Escape))
+        {
+            ExitGame();
+        }
     }
 
     public void StartGame()
     {
         titleOverlay.SetActive(false);
+        gameStarted = true;
     }
 
     public void RestartGame()
@@ -38,5 +45,11 @@ public class GameManager : MonoBehaviour
     {
         gameOverOverlay.SetActive(true);
         isGameOver = true;
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
+        print("Game Closed");
     }
 }

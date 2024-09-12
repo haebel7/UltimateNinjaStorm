@@ -13,6 +13,7 @@ public class LevelGenerator : MonoBehaviour
 
     public int mediumStartingPoint = 200;
     public int hardStartingPoint = 400;
+    public int endPoint = 600;
 
     private List<GameObject> levelSegments = new List<GameObject>();
     private GameObject currentSegment;
