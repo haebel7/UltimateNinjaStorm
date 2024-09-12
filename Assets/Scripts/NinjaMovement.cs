@@ -11,12 +11,11 @@ public class NinjaMovement : MonoBehaviour
     [Header("Horizontal Attributes")]
     public float minXSpeed = 3f;
     public float maxXSpeed = 10f;           // Maximum horizontal speed
-    public float rightAccelerationTime = 3f;
-    public float leftAccelerationTime = 3f;
+    public float accelerationTime = 3f;     //3f Seconds to reach maximum x speed
     public float breakingTime = 0.5f;       //how long it takes to break by pushing into the other direction
     public float slowdownTime = 2f;         //upon letting go of a direction, how long it takes to stop
     [Tooltip("1 = same as ground, below 1 = faster than ground, above 1 = slower than ground")]
-    public float airControl = 2f;           // 1 = same as ground, below 1 = faster than ground, above 1 = slower than ground
+    public float airControl = 2f;
 
     [Header("Vertical Attributes")]
     public float jumpSpeed = 8f;            // Additional force applied while holding jump
@@ -29,6 +28,14 @@ public class NinjaMovement : MonoBehaviour
     [Header("Fast Fall Attributes")]
     public float fastFallSpeed = 20f;
     public float maxYSpeed = 20f;           // Maximum vertical speed
+
+    [Header("Ninja Business")]
+    public NinjaCounter counter;
+    public int stormCap;
+    [Tooltip("higher values = less storm shenanigans")]
+    public float stormScaling = 5f;
+    public int maxXSpeedAtStormCap;
+
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -50,7 +57,6 @@ public class NinjaMovement : MonoBehaviour
         Fastfall();
         ClampSpeed();
     }
-
 
     public void CheckIfGrounded()
     {
@@ -74,34 +80,46 @@ public class NinjaMovement : MonoBehaviour
 
         float currentXSpeed = rb.velocity.x;
 
+        float stormValue = MathF.Log(counter.ninjaCount) / stormScaling;
+        stormValue = stormValue > stormCap ? stormCap : stormValue;
+        stormValue = stormValue < 1 ? 1 : stormValue;
+
+        float currentMaxXSpeed = Mathf.Lerp(maxXSpeed, maxXSpeedAtStormCap, stormValue / stormCap);
+        float rightAccelerationTime = accelerationTime / stormValue;
+        float rightBreakingTime = breakingTime * stormValue;
+        float rightSlowdownTime = slowdownTime * stormValue;
+        float leftAccelerationTime = accelerationTime * stormValue;
+        float leftBreakingTime = breakingTime / stormValue;
+        float leftSlowdownTime = slowdownTime / stormValue;
+
         if (isMovingRight)
         {
             if (noDirectionPressed)
             {
-                ApplyNextLerpT(currentXSpeed, maxXSpeed, slowdownTime, false);
+                ApplyNextLerpT(currentXSpeed, currentMaxXSpeed, rightSlowdownTime, false);
             }
             else if (rightPressed)
             {
-                ApplyNextLerpT(currentXSpeed, maxXSpeed, rightAccelerationTime, true);
+                ApplyNextLerpT(currentXSpeed, currentMaxXSpeed, rightAccelerationTime, true);
             }
             else if (leftPressed)
             {
-                ApplyNextLerpT(currentXSpeed, maxXSpeed, breakingTime, false);
+                ApplyNextLerpT(currentXSpeed, currentMaxXSpeed, rightBreakingTime, false);
             }
         }
         if (isMovingLeft)
         {
             if (noDirectionPressed)
             {
-                ApplyNextLerpT(currentXSpeed, -maxXSpeed, slowdownTime, false);
+                ApplyNextLerpT(currentXSpeed, -currentMaxXSpeed, leftSlowdownTime, false);
             }
             else if (leftPressed)
             {
-                ApplyNextLerpT(currentXSpeed, -maxXSpeed, rightAccelerationTime, true);
+                ApplyNextLerpT(currentXSpeed, -currentMaxXSpeed, leftAccelerationTime, true);
             }
             else if (rightPressed)
             {
-                ApplyNextLerpT(currentXSpeed, -maxXSpeed, breakingTime, false);
+                ApplyNextLerpT(currentXSpeed, -currentMaxXSpeed, leftBreakingTime, false);
             }
         }
         if (isIdle)
