@@ -36,7 +36,7 @@ public class NinjaMovement : MonoBehaviour
     private float jumpTimeCounter;
     private bool hasTriggeredFastFall;      // Flag to check if fast-fall has been triggered
 
-    void Start()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = gravityScale;
@@ -52,7 +52,7 @@ public class NinjaMovement : MonoBehaviour
     }
 
 
-    void CheckIfGrounded()
+    public void CheckIfGrounded()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
@@ -140,9 +140,9 @@ public class NinjaMovement : MonoBehaviour
         }
     }
 
-    void Jump()
+    public void Jump()
     {
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        if ((isGrounded && Input.GetKeyDown(KeyCode.Space)))
         {
             isJumping = true;
             jumpTimeCounter = maxJumpTime;

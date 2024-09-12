@@ -45,6 +45,10 @@ public class NinjaCollection : MonoBehaviour
                     GameObject newClone = Instantiate(ninjaClone, clone.position, transform.rotation);
                     newClones.Add(newClone.transform);
                     newClone.GetComponent<Rigidbody2D>().AddForce(new Vector2(-0.3f, 0.7f) * cloningForce, ForceMode2D.Impulse);
+                    newClone.GetComponent<Rigidbody2D>().velocity = clone.GetComponent<Rigidbody2D>().velocity;
+                    newClone.transform.position += new Vector3(0.5f,0,0);
+                    newClone.GetComponent<NinjaMovement>().CheckIfGrounded();
+                    newClone.GetComponent<NinjaMovement>().Jump();
 
                     var spriteRenderer = newClone.GetComponent<SpriteRenderer>();
                     spriteRenderer.sprite = clone.GetComponent<SpriteRenderer>().sprite;
