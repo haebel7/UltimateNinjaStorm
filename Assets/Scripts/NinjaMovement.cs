@@ -1,20 +1,24 @@
 using System;
 using System.Xml.Linq;
+using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(BoxCollider2D))]
 public class NinjaMovement : MonoBehaviour
 {
-    public static int xd = 100;
-
-    [Header("Movement Attributes")]
-    public float minXSpeed = 3f;            // Movement speed
-    public float acceleration = 5f;         // Movement speed
+    [Header("Horizontal Attributes")]
+    public float minXSpeed = 3f;
     public float maxXSpeed = 10f;           // Maximum horizontal speed
-    public float maxYSpeed = 20f;           // Maximum vertical speed
+    public float rightAccelerationTime = 3f;
+    public float leftAccelerationTime = 3f;
+    public float breakingTime = 0.5f;       //how long it takes to break by pushing into the other direction
+    public float slowdownTime = 2f;         //upon letting go of a direction, how long it takes to stop
+    [Tooltip("1 = same as ground, below 1 = faster than ground, above 1 = slower than ground")]
+    public float airControl = 2f;           // 1 = same as ground, below 1 = faster than ground, above 1 = slower than ground
 
-    [Header("Jump Attributes")]
+    [Header("Vertical Attributes")]
     public float jumpSpeed = 8f;            // Additional force applied while holding jump
     public float maxJumpTime = 0.17f;       // Maximum time the jump can be held
     public float gravityScale = 4f;         // Custom gravity scale to adjust falling speed
@@ -24,6 +28,7 @@ public class NinjaMovement : MonoBehaviour
 
     [Header("Fast Fall Attributes")]
     public float fastFallSpeed = 20f;
+    public float maxYSpeed = 20f;           // Maximum vertical speed
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -59,36 +64,78 @@ public class NinjaMovement : MonoBehaviour
 
     void Movement()
     {
-        bool right = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
-        bool left = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
+        bool rightPressed = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
+        bool leftPressed = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
+        bool noDirectionPressed = !rightPressed && !leftPressed;
 
-        if (left && right)
+        bool isMovingRight = rb.velocity.x >= 0.01;
+        bool isMovingLeft = rb.velocity.x <= -0.01;
+        bool isIdle = !isMovingRight && !isMovingLeft;
+
+        float currentXSpeed = rb.velocity.x;
+
+        if (isMovingRight)
         {
-            return;
+            if (noDirectionPressed)
+            {
+                ApplyNextLerpT(currentXSpeed, maxXSpeed, slowdownTime, false);
+            }
+            else if (rightPressed)
+            {
+                ApplyNextLerpT(currentXSpeed, maxXSpeed, rightAccelerationTime, true);
+            }
+            else if (leftPressed)
+            {
+                ApplyNextLerpT(currentXSpeed, maxXSpeed, breakingTime, false);
+            }
         }
-        if (right)
+        if (isMovingLeft)
         {
-            if (rb.velocity.x <= 0.1 && rb.velocity.x >= -0.1)
+            if (noDirectionPressed)
+            {
+                ApplyNextLerpT(currentXSpeed, -maxXSpeed, slowdownTime, false);
+            }
+            else if (leftPressed)
+            {
+                ApplyNextLerpT(currentXSpeed, -maxXSpeed, rightAccelerationTime, true);
+            }
+            else if (rightPressed)
+            {
+                ApplyNextLerpT(currentXSpeed, -maxXSpeed, breakingTime, false);
+            }
+        }
+        if (isIdle)
+        {
+            if (noDirectionPressed)
+            {
+                return;
+            }
+            if (rightPressed)
             {
                 rb.velocity = new Vector2(minXSpeed, rb.velocity.y);
             }
-
-            else
-            {
-                Debug.Log("Are you doing something?");
-                rb.AddForce(new Vector2(acceleration * Time.deltaTime, 0));
-            }
-        }
-        if (left)
-        {
-            if (rb.velocity.x <= 0.1 && rb.velocity.x >= -0.1)
+            if (leftPressed)
             {
                 rb.velocity = new Vector2(-minXSpeed, rb.velocity.y);
             }
+        }
 
+        void ApplyNextLerpT(float current, float max, float totalTime, bool positive)
+        {
+            totalTime = isGrounded ? totalTime : totalTime * airControl;
+            float alreadyLerped = current / max;
+            float percentageTimePassed = Time.deltaTime / totalTime;
+            if (positive)
+            {
+                float t = alreadyLerped + percentageTimePassed;
+                float nextSpeed = Mathf.Lerp(0, max, t);
+                rb.velocity = new Vector2(nextSpeed, rb.velocity.y);
+            }
             else
             {
-                rb.AddForce(new Vector2(-acceleration * Time.deltaTime, 0));
+                float t = alreadyLerped - percentageTimePassed;
+                float nextSpeed = Mathf.Lerp(0, max, t);
+                rb.velocity = new Vector2(nextSpeed, rb.velocity.y);
             }
         }
     }
