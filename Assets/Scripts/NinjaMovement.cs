@@ -58,14 +58,14 @@ public class NinjaMovement : MonoBehaviour
         ClampSpeed();
     }
 
-    public void CheckIfGrounded()
+    public bool CheckIfGrounded()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-
         if (isGrounded)
         {
             hasTriggeredFastFall = false;
         }
+        return isGrounded;
     }
 
     void Movement()

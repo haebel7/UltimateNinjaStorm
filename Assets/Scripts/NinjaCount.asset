@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 264b37cd8a6e55542b47b69d794f3054, type: 3}
   m_Name: NinjaCount
   m_EditorClassIdentifier: 
-  ninjaCount: 365
-  maxNinjasOnScreen: 0
+  ninjaCount: 1
+  maxNinjasOnScreen: 1000
