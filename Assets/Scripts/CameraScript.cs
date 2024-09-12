@@ -18,8 +18,8 @@ public class CameraScript : MonoBehaviour
     void Update()
     {
         // TODO: Remove this camera movement when player is implemented
-        if (Input.GetKey(KeyCode.D))
-            transform.Translate(Vector3.right * Time.deltaTime * scrollSpeed);
+        //if (Input.GetKey(KeyCode.D))
+        //    transform.Translate(Vector3.right * Time.deltaTime * scrollSpeed);
 
         // TODO: Remove this when player can actually die
         if (Input.GetKeyDown(KeyCode.R))
