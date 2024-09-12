@@ -40,7 +40,10 @@ public class NinjaCollection : MonoBehaviour
             if (ninjaCounter.ninjaCount > 900)
             {
                 ninjaCounter.ninjaCount = ninjaCounter.ninjaCount * 2;
-                // TODO: Add code that doubles the value of each clone (accessed in their future ninjaClone script)
+                foreach (Transform clone in clones)
+                {
+                    clone.GetComponent<NinjaClone>().value *= 2;
+                }
                 print(ninjaCounter.ninjaCount);
                 return;
             }
@@ -51,7 +54,7 @@ public class NinjaCollection : MonoBehaviour
                 if (ninjaCounter.ninjaCount < 20
                     || (ninjaCounter.ninjaCount < 120 && Random.value < 0.3)
                     || Random.value < 0.1
-                    || clone.GetComponent<SpriteRenderer>().sprite == cloneSpriteQuad)
+                    || clone.GetComponent<NinjaClone>().value >= 4)
                 {
                     GameObject newClone = Instantiate(ninjaClone, clone.position, transform.rotation);
                     newClone.transform.parent = transform;
@@ -61,32 +64,22 @@ public class NinjaCollection : MonoBehaviour
                     newClone.GetComponent<NinjaMovement>().CheckIfGrounded();
                     newClone.GetComponent<NinjaMovement>().Jump();
 
-                    var spriteRenderer = newClone.GetComponent<SpriteRenderer>();
-                    spriteRenderer.sprite = clone.GetComponent<SpriteRenderer>().sprite;
-                    if (spriteRenderer.sprite == cloneSpriteSingle)
-                    {
-                        ninjaCounter.ninjaCount += 1;
-                    }
-                    else if (spriteRenderer.sprite == cloneSpriteDouble)
-                    {
-                        ninjaCounter.ninjaCount += 2;
-                    }
-                    else
-                    {
-                        ninjaCounter.ninjaCount += 4;
-                    }
+                    newClone.GetComponent<SpriteRenderer>().sprite = clone.GetComponent<SpriteRenderer>().sprite;
+                    int newCloneValue = newClone.GetComponent<NinjaClone>().value = clone.GetComponent<NinjaClone>().value;
+                    ninjaCounter.ninjaCount += newCloneValue;
                 }
                 else
                 {
-                    var spriteRenderer = clone.GetComponent<SpriteRenderer>();
-                    if (spriteRenderer.sprite == cloneSpriteSingle)
+                    if (clone.GetComponent<NinjaClone>().value == 1)
                     {
-                        spriteRenderer.sprite = cloneSpriteDouble;
+                        clone.GetComponent<SpriteRenderer>().sprite = cloneSpriteDouble;
+                        clone.GetComponent<NinjaClone>().value += 1;
                         ninjaCounter.ninjaCount += 1;
                     }
                     else
                     {
-                        spriteRenderer.sprite = cloneSpriteQuad;
+                        clone.GetComponent<SpriteRenderer>().sprite = cloneSpriteQuad;
+                        clone.GetComponent<NinjaClone>().value += 2;
                         ninjaCounter.ninjaCount += 2;
                     }
                 }
@@ -99,19 +92,7 @@ public class NinjaCollection : MonoBehaviour
 
     public void DestroyClone(Transform clone)
     {
-        var spriteRenderer = clone.GetComponent<SpriteRenderer>();
-        if (spriteRenderer.sprite == cloneSpriteSingle)
-        {
-            ninjaCounter.ninjaCount -= 1;
-        }
-        else if (spriteRenderer.sprite == cloneSpriteDouble)
-        {
-            ninjaCounter.ninjaCount -= 2;
-        }
-        else
-        {
-            ninjaCounter.ninjaCount -= 4;
-        }
+        ninjaCounter.ninjaCount -= clone.GetComponent<NinjaClone>().value;
 
         clones.Remove(clone);
         Destroy(clone.gameObject);
