@@ -36,6 +36,10 @@ public class NinjaMovement : MonoBehaviour
     public float stormScaling = 5f;
     public int maxXSpeedAtStormCap;
 
+    
+    private Animator animator;
+    public Animator childAnimator;
+
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -47,6 +51,9 @@ public class NinjaMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = gravityScale;
+
+         // Get Animator component
+        animator = GetComponent<Animator>();
     }
 
     void Update()
@@ -56,6 +63,9 @@ public class NinjaMovement : MonoBehaviour
         Jump();
         Fastfall();
         ClampSpeed();
+
+        // Update animator parameters based on movement
+        UpdateAnimator();
     }
 
     public bool CheckIfGrounded()
@@ -70,93 +80,104 @@ public class NinjaMovement : MonoBehaviour
 
     void Movement()
     {
-        bool rightPressed = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
-        bool leftPressed = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
-        bool noDirectionPressed = !rightPressed && !leftPressed;
+    bool rightPressed = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
+    bool leftPressed = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
+    bool noDirectionPressed = !rightPressed && !leftPressed;
 
-        bool isMovingRight = rb.velocity.x >= 0.01;
-        bool isMovingLeft = rb.velocity.x <= -0.01;
-        bool isIdle = !isMovingRight && !isMovingLeft;
+    bool isMovingRight = rb.velocity.x >= 0.01f;
+    bool isMovingLeft = rb.velocity.x <= -0.01f;
+    bool isIdle = !isMovingRight && !isMovingLeft;
 
-        float currentXSpeed = rb.velocity.x;
+    float currentXSpeed = rb.velocity.x;
 
-        float stormValue = MathF.Log(counter.ninjaCount) / stormScaling;
-        stormValue = stormValue > stormCap ? stormCap : stormValue;
-        stormValue = stormValue < 1 ? 1 : stormValue;
+    // Flip the sprite based on the direction
+    if (isMovingRight)
+    {
+        transform.localScale = new Vector3(1, transform.localScale.y, transform.localScale.z);  // Face right
+    }
+    else if (isMovingLeft)
+    {
+        transform.localScale = new Vector3(-1, transform.localScale.y, transform.localScale.z);  // Face left
+    }
 
-        float currentMaxXSpeed = Mathf.Lerp(maxXSpeed, maxXSpeedAtStormCap, stormValue / stormCap);
-        float rightAccelerationTime = accelerationTime / stormValue;
-        float rightBreakingTime = breakingTime * stormValue;
-        float rightSlowdownTime = slowdownTime * stormValue;
-        float leftAccelerationTime = accelerationTime * stormValue;
-        float leftBreakingTime = breakingTime / stormValue;
-        float leftSlowdownTime = slowdownTime / stormValue;
+    float stormValue = MathF.Log(counter.ninjaCount) / stormScaling;
+    stormValue = stormValue > stormCap ? stormCap : stormValue;
+    stormValue = stormValue < 1 ? 1 : stormValue;
 
-        if (isMovingRight)
+    float currentMaxXSpeed = Mathf.Lerp(maxXSpeed, maxXSpeedAtStormCap, stormValue / stormCap);
+    float rightAccelerationTime = accelerationTime / stormValue;
+    float rightBreakingTime = breakingTime * stormValue;
+    float rightSlowdownTime = slowdownTime * stormValue;
+    float leftAccelerationTime = accelerationTime * stormValue;
+    float leftBreakingTime = breakingTime / stormValue;
+    float leftSlowdownTime = slowdownTime / stormValue;
+
+    if (isMovingRight)
+    {
+        if (noDirectionPressed)
         {
-            if (noDirectionPressed)
-            {
-                ApplyNextLerpT(currentXSpeed, currentMaxXSpeed, rightSlowdownTime, false);
-            }
-            else if (rightPressed)
-            {
-                ApplyNextLerpT(currentXSpeed, currentMaxXSpeed, rightAccelerationTime, true);
-            }
-            else if (leftPressed)
-            {
-                ApplyNextLerpT(currentXSpeed, currentMaxXSpeed, rightBreakingTime, false);
-            }
+            ApplyNextLerpT(currentXSpeed, currentMaxXSpeed, rightSlowdownTime, false);
         }
-        if (isMovingLeft)
+        else if (rightPressed)
         {
-            if (noDirectionPressed)
-            {
-                ApplyNextLerpT(currentXSpeed, -currentMaxXSpeed, leftSlowdownTime, false);
-            }
-            else if (leftPressed)
-            {
-                ApplyNextLerpT(currentXSpeed, -currentMaxXSpeed, leftAccelerationTime, true);
-            }
-            else if (rightPressed)
-            {
-                ApplyNextLerpT(currentXSpeed, -currentMaxXSpeed, leftBreakingTime, false);
-            }
+            ApplyNextLerpT(currentXSpeed, currentMaxXSpeed, rightAccelerationTime, true);
         }
-        if (isIdle)
+        else if (leftPressed)
         {
-            if (noDirectionPressed)
-            {
-                return;
-            }
-            if (rightPressed)
-            {
-                rb.velocity = new Vector2(minXSpeed, rb.velocity.y);
-            }
-            if (leftPressed)
-            {
-                rb.velocity = new Vector2(-minXSpeed, rb.velocity.y);
-            }
-        }
-
-        void ApplyNextLerpT(float current, float max, float totalTime, bool positive)
-        {
-            totalTime = isGrounded ? totalTime : totalTime * airControl;
-            float alreadyLerped = current / max;
-            float percentageTimePassed = Time.deltaTime / totalTime;
-            if (positive)
-            {
-                float t = alreadyLerped + percentageTimePassed;
-                float nextSpeed = Mathf.Lerp(0, max, t);
-                rb.velocity = new Vector2(nextSpeed, rb.velocity.y);
-            }
-            else
-            {
-                float t = alreadyLerped - percentageTimePassed;
-                float nextSpeed = Mathf.Lerp(0, max, t);
-                rb.velocity = new Vector2(nextSpeed, rb.velocity.y);
-            }
+            ApplyNextLerpT(currentXSpeed, currentMaxXSpeed, rightBreakingTime, false);
         }
     }
+    if (isMovingLeft)
+    {
+        if (noDirectionPressed)
+        {
+            ApplyNextLerpT(currentXSpeed, -currentMaxXSpeed, leftSlowdownTime, false);
+        }
+        else if (leftPressed)
+        {
+            ApplyNextLerpT(currentXSpeed, -currentMaxXSpeed, leftAccelerationTime, true);
+        }
+        else if (rightPressed)
+        {
+            ApplyNextLerpT(currentXSpeed, -currentMaxXSpeed, leftBreakingTime, false);
+        }
+    }
+    if (isIdle)
+    {
+        if (noDirectionPressed)
+        {
+            return;
+        }
+        if (rightPressed)
+        {
+            rb.velocity = new Vector2(minXSpeed, rb.velocity.y);
+        }
+        if (leftPressed)
+        {
+            rb.velocity = new Vector2(-minXSpeed, rb.velocity.y);
+        }
+    }
+
+    void ApplyNextLerpT(float current, float max, float totalTime, bool positive)
+    {
+        totalTime = isGrounded ? totalTime : totalTime * airControl;
+        float alreadyLerped = current / max;
+        float percentageTimePassed = Time.deltaTime / totalTime;
+        if (positive)
+        {
+            float t = alreadyLerped + percentageTimePassed;
+            float nextSpeed = Mathf.Lerp(0, max, t);
+            rb.velocity = new Vector2(nextSpeed, rb.velocity.y);
+        }
+        else
+        {
+            float t = alreadyLerped - percentageTimePassed;
+            float nextSpeed = Mathf.Lerp(0, max, t);
+            rb.velocity = new Vector2(nextSpeed, rb.velocity.y);
+        }
+    }
+    }
+
 
     public void Jump()
     {
@@ -213,6 +234,17 @@ public class NinjaMovement : MonoBehaviour
 
         rb.velocity = clamp;
     }
+
+
+    // Update Animator parameters
+    void UpdateAnimator()
+    {
+        animator.SetBool("isRunning", Mathf.Abs(rb.velocity.x) > 0.1f);
+        childAnimator.SetBool("isRunning", Mathf.Abs(rb.velocity.x) > 0.1f); 
+        //animator.SetBool("isJumping", !isGrounded && rb.velocity.y > 0.1f);
+        //animator.SetBool("isFalling", !isGrounded && rb.velocity.y < -0.1f);
+    }
+
 
     // Optional: visualize the ground check sphere in the editor
     void OnDrawGizmos()
