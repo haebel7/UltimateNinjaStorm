@@ -39,9 +39,12 @@ public class NinjaCollection : MonoBehaviour
         {
             if (ninjaCounter.ninjaCount > 900)
             {
-                ninjaCounter.ninjaCount = ninjaCounter.ninjaCount * 2;
                 foreach (Transform clone in clones)
                 {
+                    if (!clone.GetComponent<NinjaMovement>().CheckIfGrounded())
+                        continue;
+
+                    ninjaCounter.ninjaCount += clone.GetComponent<NinjaClone>().value;
                     clone.GetComponent<NinjaClone>().value *= 2;
                 }
                 print(ninjaCounter.ninjaCount);
@@ -51,6 +54,9 @@ public class NinjaCollection : MonoBehaviour
             List<Transform> newClones = new List<Transform>();
             foreach (Transform clone in clones)
             {
+                if (!clone.GetComponent<NinjaMovement>().CheckIfGrounded())
+                    continue;
+
                 if (ninjaCounter.ninjaCount < 20
                     || (ninjaCounter.ninjaCount < 120 && Random.value < 0.3)
                     || Random.value < 0.1
