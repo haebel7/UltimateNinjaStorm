@@ -1,8 +1,8 @@
-using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class NinjaCollection : MonoBehaviour
 {
@@ -12,8 +12,7 @@ public class NinjaCollection : MonoBehaviour
     [SerializeField] private Sprite cloneSpriteQuad;
     [SerializeField] private NinjaCounter ninjaCounter;
 
-    [SerializeField] private CinemachineTargetGroup targetGroup;
-    [SerializeField] private float targetGroupRadius = 5;
+    [SerializeField] private CameraScript cam;
 
     private List<Transform> clones = new List<Transform>();
 
@@ -29,7 +28,8 @@ public class NinjaCollection : MonoBehaviour
         newClone.transform.parent = transform;
         clones.Add(newClone.transform);
         ninjaCounter.ninjaCount++;
-        targetGroup.AddMember(newClone.transform, 1, targetGroupRadius);
+        //targetGroup.AddMember(newClone.transform, 1, targetGroupRadius);
+        SetCamTarget();
     }
 
     // Update is called once per frame
@@ -98,11 +98,7 @@ public class NinjaCollection : MonoBehaviour
             }
             clones.AddRange(newClones);
 
-            targetGroup.m_Targets = new CinemachineTargetGroup.Target[0];
-            float maxPos = clones.AsQueryable().Max(clone => clone.position.x);
-            float minPos = clones.AsQueryable().Min(clone => clone.position.x);
-            targetGroup.AddMember(clones.Find(clone => clone.position.x == maxPos), 1, targetGroupRadius);
-            targetGroup.AddMember(clones.Find(clone => clone.position.x == minPos), 1, targetGroupRadius);
+            SetCamTarget();
 
             print(ninjaCounter.ninjaCount);
         }
@@ -114,5 +110,16 @@ public class NinjaCollection : MonoBehaviour
 
         clones.Remove(clone);
         Destroy(clone.gameObject);
+
+        SetCamTarget();
+    }
+
+    private void SetCamTarget()
+    {
+        if (clones.Count <= 0)
+            return;
+
+        clones.Sort((a, b) => a.position.x.CompareTo(b.position.x));
+        cam.camTarget = clones[clones.Count / 2];
     }
 }
