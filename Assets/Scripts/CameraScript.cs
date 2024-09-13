@@ -1,11 +1,10 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraScript : MonoBehaviour
 {
-    public float scrollSpeed;
-
     private GameManager gm;
 
     // Start is called before the first frame update
@@ -18,8 +17,8 @@ public class CameraScript : MonoBehaviour
     void Update()
     {
         // TODO: Remove this when player can actually die
-        if (Input.GetKeyDown(KeyCode.R))
-            gm.TriggerGameOver();
+        //if (Input.GetKeyDown(KeyCode.R))
+        //    gm.TriggerGameOver();
 
         if (transform.position.x > 10)
             gm.StartGame();

@@ -1,5 +1,7 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class NinjaCollection : MonoBehaviour
@@ -9,6 +11,8 @@ public class NinjaCollection : MonoBehaviour
     [SerializeField] private Sprite cloneSpriteDouble;
     [SerializeField] private Sprite cloneSpriteQuad;
     [SerializeField] private NinjaCounter ninjaCounter;
+
+    [SerializeField] private CinemachineTargetGroup targetGroup;
 
     private List<Transform> clones = new List<Transform>();
 
@@ -24,6 +28,7 @@ public class NinjaCollection : MonoBehaviour
         newClone.transform.parent = transform;
         clones.Add(newClone.transform);
         ninjaCounter.ninjaCount++;
+        targetGroup.AddMember(newClone.transform, 1, 5);
     }
 
     // Update is called once per frame
@@ -91,6 +96,12 @@ public class NinjaCollection : MonoBehaviour
                 }
             }
             clones.AddRange(newClones);
+
+            targetGroup.m_Targets = new CinemachineTargetGroup.Target[0];
+            float maxPos = clones.AsQueryable().Max(clone => clone.position.x);
+            float minPos = clones.AsQueryable().Min(clone => clone.position.x);
+            targetGroup.AddMember(clones.Find(clone => clone.position.x == maxPos), 1, 5);
+            targetGroup.AddMember(clones.Find(clone => clone.position.x == minPos), 1, 5);
 
             print(ninjaCounter.ninjaCount);
         }
