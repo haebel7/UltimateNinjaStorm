@@ -15,6 +15,7 @@ public class NinjaCollection : MonoBehaviour
     [SerializeField] private CameraScript cam;
 
     private List<Transform> clones = new List<Transform>();
+    private GameManager gm;
 
     void OnEnable()
     {
@@ -24,26 +25,29 @@ public class NinjaCollection : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gm = FindObjectOfType<GameManager>();
         GameObject newClone = Instantiate(ninjaClone, transform.position, transform.rotation);
         newClone.transform.parent = transform;
         clones.Add(newClone.transform);
         ninjaCounter.ninjaCount++;
-        //targetGroup.AddMember(newClone.transform, 1, targetGroupRadius);
         SetCamTarget();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            DestroyClone(clones[Random.Range(0, clones.Count)]);
-            print(ninjaCounter.ninjaCount);
-        }
+        if (gm.GetIsGameOver())
+            return;
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (ninjaCounter.ninjaCount > 900)
+            if (ninjaCounter.ninjaCount > 1000000000)
+            {
+                print(ninjaCounter.ninjaCount);
+                return;
+            }
+
+            if (/*ninjaCounter.ninjaCount > 900*/clones.Count > 100)
             {
                 foreach (Transform clone in clones)
                 {
@@ -54,6 +58,7 @@ public class NinjaCollection : MonoBehaviour
                     clone.GetComponent<NinjaClone>().value *= 2;
                 }
                 print(ninjaCounter.ninjaCount);
+                //print("Clone count: " + clones.Count);
                 return;
             }
 
@@ -68,29 +73,21 @@ public class NinjaCollection : MonoBehaviour
                     || Random.value < 0.1
                     || clone.GetComponent<NinjaClone>().value >= 4)
                 {
-                    GameObject newClone = Instantiate(ninjaClone, clone.position, transform.rotation);
-                    newClone.transform.parent = transform;
-                    newClones.Add(newClone.transform);
-                    newClone.GetComponent<Rigidbody2D>().velocity = clone.GetComponent<Rigidbody2D>().velocity;
-                    newClone.transform.position += new Vector3(0.5f, 0, 0);
-                    newClone.GetComponent<NinjaMovement>().CheckIfGrounded();
-                    newClone.GetComponent<NinjaMovement>().Jump();
-
-                    newClone.GetComponent<SpriteRenderer>().sprite = clone.GetComponent<SpriteRenderer>().sprite;
-                    int newCloneValue = newClone.GetComponent<NinjaClone>().value = clone.GetComponent<NinjaClone>().value;
-                    ninjaCounter.ninjaCount += newCloneValue;
+                    newClones.Add(CloneNinja(clone));
                 }
                 else
                 {
                     if (clone.GetComponent<NinjaClone>().value == 1)
                     {
-                        clone.GetComponent<SpriteRenderer>().sprite = cloneSpriteDouble;
+                        //clone.GetComponent<SpriteRenderer>().sprite = cloneSpriteDouble;
+                        clone.GetComponent<Animator>().Play("Animation_Idle_Basic");
                         clone.GetComponent<NinjaClone>().value += 1;
                         ninjaCounter.ninjaCount += 1;
                     }
                     else
                     {
-                        clone.GetComponent<SpriteRenderer>().sprite = cloneSpriteQuad;
+                        //clone.GetComponent<SpriteRenderer>().sprite = cloneSpriteQuad;
+                        clone.GetComponent<Animator>().Play("Animation_Idle_Basic");
                         clone.GetComponent<NinjaClone>().value += 2;
                         ninjaCounter.ninjaCount += 2;
                     }
@@ -104,6 +101,23 @@ public class NinjaCollection : MonoBehaviour
         }
     }
 
+    private Transform CloneNinja(Transform clone)
+    {
+        GameObject newClone = Instantiate(ninjaClone, clone.position, transform.rotation);
+        newClone.transform.parent = transform;
+        newClone.GetComponent<Rigidbody2D>().velocity = clone.GetComponent<Rigidbody2D>().velocity;
+        newClone.transform.position += new Vector3(0.5f, 0, 0);
+        newClone.GetComponent<NinjaMovement>().CheckIfGrounded();
+        newClone.GetComponent<NinjaMovement>().Jump();
+
+        //newClone.GetComponent<SpriteRenderer>().sprite = clone.GetComponent<SpriteRenderer>().sprite;
+        newClone.GetComponent<Animator>().Play("Animation_Idle_Basic");
+        int newCloneValue = newClone.GetComponent<NinjaClone>().value = clone.GetComponent<NinjaClone>().value;
+        ninjaCounter.ninjaCount += newCloneValue;
+
+        return newClone.transform;
+    }
+
     public void DestroyClone(Transform clone)
     {
         ninjaCounter.ninjaCount -= clone.GetComponent<NinjaClone>().value;
@@ -112,6 +126,11 @@ public class NinjaCollection : MonoBehaviour
         Destroy(clone.gameObject);
 
         SetCamTarget();
+
+        if (clones.Count <= 0)
+        {
+            gm.TriggerGameOver();
+        }
     }
 
     private void SetCamTarget()

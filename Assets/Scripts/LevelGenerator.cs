@@ -13,13 +13,13 @@ public class LevelGenerator : MonoBehaviour
 
     public int mediumStartingPoint = 200;
     public int hardStartingPoint = 400;
-    public int endPoint = 600;
+    public int bossPoint = 600;
 
     private List<GameObject> levelSegments = new List<GameObject>();
     private GameObject currentSegment;
     private GameObject lastSegment;
 
-    private int segmentWidth = 18;
+    private int segmentWidth = 40;
     private int nextSegmentPos = 0;
 
     private DifficultyLevel currentDifficulty = DifficultyLevel.Easy;

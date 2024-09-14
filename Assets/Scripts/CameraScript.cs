@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class CameraScript : MonoBehaviour
 {
-    public Transform camTarget;
+    [HideInInspector] public Transform camTarget;
+    public Transform backWall;
 
     private GameManager gm;
 
@@ -17,14 +18,22 @@ public class CameraScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // TODO: Remove this when player can actually die
         if (Input.GetKeyDown(KeyCode.R))
-            gm.TriggerGameOver();
+            gm.TriggerGameWon();
 
         if (transform.position.x > 10)
             gm.StartGame();
 
+    }
+
+    private void FixedUpdate()
+    {
         if (camTarget)
-            transform.position = new Vector3(camTarget.position.x, 0, -10);
+        {
+            transform.position = Vector3.Lerp(transform.position, new Vector3(camTarget.position.x + 4, 0, -10), 0.1f);
+
+            if (transform.position.x - 15 > backWall.position.x)
+                backWall.position = new Vector3(transform.position.x - 15, 0, 0);
+        }
     }
 }
