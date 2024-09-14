@@ -18,8 +18,8 @@ public class CameraScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-            gm.TriggerGameWon();
+        //if (Input.GetKeyDown(KeyCode.R))
+        //    gm.TriggerGameWon();
 
         if (transform.position.x > 10)
             gm.StartGame();
