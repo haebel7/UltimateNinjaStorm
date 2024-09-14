@@ -7,6 +7,8 @@ public class GameManager : MonoBehaviour
 {
     public GameObject titleOverlay;
     public GameObject gameOverOverlay;
+    public GameObject winOverlay;
+    public NinjaCounter ninjaCounter;
 
     private bool isGameOver = false;
     private bool gameStarted = false;
@@ -14,6 +16,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Time.timeScale = 1;
         titleOverlay.SetActive(true);
     }
 
@@ -27,6 +30,14 @@ public class GameManager : MonoBehaviour
         if ((isGameOver || !gameStarted) && Input.GetKeyDown(KeyCode.Escape))
         {
             ExitGame();
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (isGameOver)
+        {
+            Time.timeScale = Mathf.MoveTowards(Time.timeScale, 0, 0.1f);
         }
     }
 
@@ -47,9 +58,21 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
     }
 
+    public void TriggerGameWon()
+    {
+        winOverlay.transform.Find("NinjaTotal").GetComponent<TMPro.TextMeshProUGUI>().text = "Total Ninjas: " + ninjaCounter.ninjaCount;
+        winOverlay.SetActive(true);
+        isGameOver = true;
+    }
+
     public void ExitGame()
     {
         Application.Quit();
         print("Game Closed");
+    }
+
+    public bool GetIsGameOver()
+    {
+        return isGameOver;
     }
 }

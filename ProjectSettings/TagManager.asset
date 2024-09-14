@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ninja
   - Bullet
+  - Spikes
   layers:
   - Default
   - TransparentFX
