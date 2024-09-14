@@ -16,6 +16,11 @@ public class NinjaCollection : MonoBehaviour
 
     private List<Transform> clones = new List<Transform>();
 
+    public Transform GetRandomNinja()
+    {
+        return clones[Random.Range(0, clones.Count)];
+    }
+
     void OnEnable()
     {
         ninjaCounter.ninjaCount = 0;
